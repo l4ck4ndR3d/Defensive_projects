@@ -76,7 +76,9 @@ index=suricata "http.url"="/sempstrywork.php"
  5. Severity: High
  6. SHA256: 84577db0b164c06ef9628a94eb693150dc2101332ed526f4d431ddb56b3a7c4c
 
+---
 
 # ✍️ Author
 Bala Mahendar
+
 Cybersecurity | SOC Analyst in Training
