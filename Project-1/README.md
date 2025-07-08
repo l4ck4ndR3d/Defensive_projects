@@ -18,13 +18,14 @@ The main objective is to perform hands-on SOC analysis using real network traffi
 - **Suricata** – Open-source IDS/IPS to analyze PCAP
 - **VirusTotal / Hybrid Analysis / ThreatFox** – Threat intelligence enrichment
 - **Wireshark** – Packet inspection
-- **Ubuntu / Windows 11** – Host and container environment
+- **Windows 11** – Host and container environment
 
 ---
 
 ## 📦 Dataset
 
 - `2025-06-21-Koi-Loader-Koi-Stealer-infection-traffic.pcap`
+- **Link** - https://www.malware-traffic-analysis.net/2025/06/21/index.html
 - Simulated a malware infection and C2 callback involving KoiStealer
 
 ---
@@ -65,3 +66,17 @@ index=suricata "http.http_method"=GET "alert.signature"="ET MALWARE Win32/Koi St
 
 index=suricata "http.url"="/sempstrywork.php"
 | table src_ip dest_ip alert.signature
+```
+## 🚨 Incident Summary
+
+ 1. Target: 10.6.21.101 (internal host)
+ 2. Attacker IP: 89.36.231.26
+ 3. Malware: KoiStealer
+ 4. IOC: http://89.36.231.26/sempstrywork.php
+ 5. Severity: High
+ 6. SHA256: 84577db0b164c06ef9628a94eb693150dc2101332ed526f4d431ddb56b3a7c4c
+
+
+# ✍️ Author
+Bala Mahendar
+Cybersecurity | SOC Analyst in Training
