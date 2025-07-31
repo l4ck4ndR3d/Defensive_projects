@@ -1,86 +1,80 @@
-🕵️‍♂️Building a Threat Detection and Response System using Splunk with Real-World Logs & SOAR Automation
+## Cyborg C2: A Realistic, Containerized Adversary Simulation Framework
 
-#### Topic :  “CyberHunt: SOC Simulation with Multi-Source Logs & SOAR”
+### 🧠 Concepts
 
-```
-Project Objective:
-
-To simulate a Security Operations Center (SOC) environment by ingesting multiple log sources (HTTP, Linux audit logs, Suricata IDS, Firewall logs), performing threat detection with Splunk, building dashboards, and automating incident response actions using SOAR.
-
-
-https://www.paloaltonetworks.com/cyberpedia/what-is-soar
-
-```
-
-| Category            | Tools/Components                                                                               |
-| ------------------- | ---------------------------------------------------------------------------------------------- |
-| SIEM                | Splunk (Free or Enterprise Trial)                                                              |
-| OS                  | Ubuntu (as log forwarder and host)                                                             |
-| Log Sources         | Suricata, Apache/Nginx (HTTP), Linux audit logs, Palo Alto Firewall logs (simulated), DNS logs |
-| Log Forwarding      | Splunk Universal Forwarder                                                                     |
-| Automation          | Splunk SOAR (Phantom) or Mocked Actions                                                        |
-| Threat Intelligence | VirusTotal, Abuse.ch (optional)                                                                |
-## 🔍 **Project Workflow (High-Level)**
-
-1. **Log Collection and Ingestion**
-    - Install Splunk on Ubuntu or VM
-    - Use Universal Forwarder to send Linux audit logs
-    - Simulate HTTP requests using web server (Apache/Nginx)
-    - Generate Suricata alerts using PCAPs
-    - Simulate firewall logs (JSON or syslog format from Palo Alto)
-        
-2. **Log Parsing and Field Extraction**:
-    - Manually extract fields (using `rex`, `spath`)
-    - Use props.conf + transforms.conf (if advanced)
-    - Tag sourcetypes correctly (e.g., `suricata`, `linux_secure`, `http_access`, `firewall_logs`)
-        
-3. **Threat Hunting & Investigation**:
-    - Run SPL queries to detect:
-        - SSH brute-force attempts
-        - Suspicious HTTP URLs or User Agents
-        - C2 communication in Suricata
-        - Blocked outbound firewall connections
-    - Use MITRE ATT&CK framework for mapping
-
-4. **Dashboards & Visualizations**:
-    - Build 2–3 dashboards:
-        - SSH Login Activity
-        - HTTP Access Dashboard
-        - Suricata Alerts Overview
-        - MITRE Technique Heatmap (if lookup is available)
-
-5. **Alerts & Automation (SOAR)**:
-    - Create alerts in Splunk (e.g., brute-force SSH login)
-    - Send alert to SOAR platform or simulate response
-        - Auto-email security team
-        - Run script to isolate host (simulated)
-        - Block IP via firewall rule (mocked)
-
-6. **Reporting**:
-    - Document alert triage, response playbooks, dashboard screenshots
-    - Incident summaries with IOC, timeline, severity, and response actions
-        
+Build a containerized, modular Command & Control (C2) simulation framework that replicates real-world adversary behavior, inspired by tools like Cobalt Strike, Mythic, and Sliver, but built for training, detection engineering, and research, not real attacks.
 
 ---
-## 📁 **Deliverables**:
 
-- Splunk dashboards (exported or screenshots)
-- Alert configurations and example triggers
-- SOAR playbook or mock scripts
-- Documentation/report (PDF or blog-style)
+### 🞋 Goal
+
+1. Simulate real-world APT techniques (MITRE ATT&CK) inside isolated Kali VMs and networks.
+2. Use Docker containers to spin up attack stages (e.g., phishing server, lateral movement toolkits).
+3. Use VirtualBox (or Vagrant) to launch vulnerable machines and blue team defenders (e.g., ELK stack, Suricata).
+4. Create an automated attack-emulation lab for testing EDRs, SIEMs, and SOC response playbooks.
 
 ---
-## ⭐ Sample Use Cases to Implement
 
-|Use Case|Detection Method|Response Action|
-|---|---|---|
-|SSH Brute Force|Failed logins from same IP|Auto-block IP or alert|
-|Malware Callback (Suricata)|Suspicious HTTP C2 alert|Notify via SOAR|
-|Abnormal HTTP User-Agent|Regex match on UA|Flag for review|
-|DNS Tunneling|High-frequency DNS logs|Alert SOC analyst|
-|Unauthorized File Access|Audit log `chmod`, `scp`|Raise incident|
+### 🔁 Data Flow Summary:
 
-## 🧠 Bonus Enhancements
-- Integrate with **MITRE ATT&CK Navigator**
-- Use **lookup tables** for IP reputation (ThreatFox, Abuse.ch)
-- Export logs and parse them offline (for portable demos)
+- Kali VM (in VirtualBox) is the main attacker, issuing commands or payloads.
+- The Docker C2 (e.g., Mythic or a custom Flask-based C2) manages communications with deployed payloads.
+- Multiple Attack Containers simulate malware stages (e.g., phishing, privilege escalation).
+- Defender Containers (IDS, loggers) inspect traffic, generate alerts, and provide telemetry.
+
+---
+
+### Workflow 
+```
+┌────────────┐
+│  Kali VM   │  ← attacker
+└────┬───────┘
+     │
+     ▼
+┌────────────┐
+│  C2 Docker │  ← attacker infra (Flask/Mythic listener)
+└────┬───────┘
+     │
+     ▼
+┌────────────┐
+│ Victim Box │  ← vulnerable machine (e.g., DVWA container)
+│ + Suricata │  ← monitors traffic
+└────┬───────┘
+     │
+     ▼
+┌────────────┐
+│ Wazuh/ELK  │  ← parses + visualizes Suricata logs
+└────────────┘
+
+```
+---
+
+### How are IP's are assigned 
+```
+docker network create \
+  --subnet=192.168.100.0/24 \
+  --gateway=192.168.100.1 \
+  cyberlab_net
+
+
+📌 When you run the contianers attach them like this:
+
+docker run --rm -it \
+  --network=cyberlab_net \
+  --ip=192.168.100.10 \
+  --name=c2_server my-c2-image
+
+2. In Virtual Box Kali VM: Set up host-only adapter in adapter-2
+    Go to Kali VM Settings > Network > Adapter 2
+
+    Enable Host-Only Adapter
+
+    Assign adapter to vboxnet0 or your custom host-only adapter
+
+    Set Kali static IP: 192.168.100.50
+
+Edit /etc/network/interfaces or use:
+
+sudo ip addr add 192.168.100.50/24 dev eth1
+sudo ip link set dev eth1 up
+```
