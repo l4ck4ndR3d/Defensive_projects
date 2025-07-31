@@ -1,0 +1,83 @@
+version: '3.9'
+
+networks:
+  cyberlab_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.56.0/24
+          gateway: 192.168.56.1
+
+services:
+
+  ### ✅ C2 Server (Mythic C2) ###
+  mythic:
+    image: itsafeature/mythic:latest
+    container_name: c2_server
+    networks:
+      cyberlab_net:
+        ipv4_address: 192.168.56.10
+    environment:
+      - MYTHIC_ADMIN_USER=admin
+      - MYTHIC_ADMIN_PASSWORD=admin123
+    ports:
+      - "7443:7443"   # Mythic Web UI
+    restart: unless-stopped
+
+  ### 🎯 Victim Target ###
+  victim:
+    image: vulhub/vulnerable-flask
+    container_name: victim1
+    networks:
+      cyberlab_net:
+        ipv4_address: 192.168.56.11
+    ports:
+      - "5000:5000"   # Optional external access
+    restart: unless-stopped
+
+  ### 🧅 Suricata IDS ###
+  suricata:
+    image: jasonish/suricata:latest
+    container_name: suricata
+    networks:
+      cyberlab_net:
+        ipv4_address: 192.168.56.20
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ./suricata/logs:/var/log/suricata
+      - ./suricata/config:/etc/suricata
+    command: -i eth0
+    restart: unless-stopped
+
+  ### 📊 Wazuh Stack ###
+  wazuh.manager:
+    image: wazuh/wazuh-manager:latest
+    container_name: wazuh-manager
+    networks:
+      cyberlab_net:
+        ipv4_address: 192.168.56.30
+    ports:
+      - "1514:1514/udp"
+      - "1515:1515"
+    volumes:
+      - wazuh_data:/var/ossec/data
+    restart: unless-stopped
+
+  wazuh.agent:
+    image: wazuh/wazuh-agent:latest
+    container_name: wazuh-agent
+    depends_on:
+      - wazuh.manager
+    networks:
+      cyberlab_net:
+        ipv4_address: 192.168.56.31
+    environment:
+      - MANAGER_IP=192.168.56.30
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+volumes:
+  wazuh_data:
+
