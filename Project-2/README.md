@@ -1,28 +1,19 @@
 ## Cyborg C2: A Realistic, Containerized Adversary Simulation Framework
 
 ### 🧠 Concepts
-
 Build a containerized, modular Command & Control (C2) simulation framework that replicates real-world adversary behavior, inspired by tools like Cobalt Strike, Mythic, and Sliver, but built for training, detection engineering, and research, not real attacks.
 
----
-
 ### 🞋 Goal
-
-1. Simulate real-world APT techniques (MITRE ATT&CK) inside isolated Kali VMs and networks.
-2. Use Docker containers to spin up attack stages (e.g., phishing server, lateral movement toolkits).
-3. Use VirtualBox (or Vagrant) to launch vulnerable machines and blue team defenders (e.g., ELK stack, Suricata).
-4. Create an automated attack-emulation lab for testing EDRs, SIEMs, and SOC response playbooks.
-
----
+A C2 server (attacker-controlled)
+One or more victim containers (simulated endpoints)
+A Suricata container (monitoring/sniffing traffic)
+A Wazuh agent or manager (for SIEM + alerting)
 
 ### 🔁 Data Flow Summary:
-
 - Kali VM (in VirtualBox) is the main attacker, issuing commands or payloads.
 - The Docker C2 (e.g., Mythic or a custom Flask-based C2) manages communications with deployed payloads.
 - Multiple Attack Containers simulate malware stages (e.g., phishing, privilege escalation).
 - Defender Containers (IDS, loggers) inspect traffic, generate alerts, and provide telemetry.
-
----
 
 ### Workflow 
 ```
@@ -47,34 +38,44 @@ Build a containerized, modular Command & Control (C2) simulation framework that 
 └────────────┘
 
 ```
----
 
 ### How are IP's are assigned 
 ```
+1. Create the netwrok :
 docker network create \
   --subnet=192.168.100.0/24 \
   --gateway=192.168.100.1 \
   cyberlab_net
 
-
 📌 When you run the contianers attach them like this:
-
 docker run --rm -it \
   --network=cyberlab_net \
   --ip=192.168.100.10 \
   --name=c2_server my-c2-image
 
 2. In Virtual Box Kali VM: Set up host-only adapter in adapter-2
-    Go to Kali VM Settings > Network > Adapter 2
-
-    Enable Host-Only Adapter
-
-    Assign adapter to vboxnet0 or your custom host-only adapter
-
-    Set Kali static IP: 192.168.100.50
-
-Edit /etc/network/interfaces or use:
-
-sudo ip addr add 192.168.100.50/24 dev eth1
-sudo ip link set dev eth1 up
+   Go to Kali VM Settings > Network > Adapter 2
+          * Enable Host-Only Adapter
+          * Assign adapter to vboxnet0 or your custom host-only adapter
+          * Inside the Kali-Linux machine:
+               sudo ip addr add 192.168.100.50/24 dev eth1
+               sudo ip link set dev eth1 up
 ```
+---
+
+## Recommended Docker Images
+
+```
+🕵️‍♂️ 1. C2 Server (Command & Control)
+          Mythic C2
+          Docker image : its-a-feature/mythic
+          Notes : Best for full-featured real-world C2
+🎯 2. Victim Machine(s):
+          👉 You can also make your own Dockerfile with backdoors or open ports
+          [Upload in the Github Folder]
+🧅 3. Suricata IDS:
+📊 4. Wazuh SIEM Stack:
+          ✅ Recommended: Use their official docker-compose repo for
+                          a full deployment (Wazuh + ELK).
+```
+
