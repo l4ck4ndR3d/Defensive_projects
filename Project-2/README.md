@@ -1,4 +1,4 @@
-## Cyborg C2: A Realistic, Containerized Adversary Simulation Framework
+## Cyborg C2: A Realistic, Containerized Adversary Simulation Framework   [ In development ]
 
 ### 🧠 Concepts
 Build a containerized, modular Command & Control (C2) simulation framework that replicates real-world adversary behavior, inspired by tools like Cobalt Strike, Mythic, and Sliver, but built for training, detection engineering, and research, not real attacks.
