@@ -2,7 +2,7 @@
 
 ## 📌 Project Objective
 To design and implement an autonomous Security Operations Center (SOC) pipeline using low-code/no-code SOAR platforms (e.g., Shuffle) that:
-   - Ingests alerts from IDS/SIEM (Wazuh/Security Onion).
+   - Ingests alerts from IDS/SIEM.
    - Uses AI/LLM models for threat summarization and MITRE ATT&CK mapping.
    - Automates real-time responses such as blocking malicious IPs, quarantining endpoints, and redirecting attackers to honeypots.
    - Maintains full incident documentation for digital forensics and reporting.
@@ -42,32 +42,42 @@ To design and implement an autonomous Security Operations Center (SOC) pipeline 
     C --> I[Slack/Teams SOC Alerts]
     C --> J[Kibana/Grafana Dashboards]
 ```
-# 📅 Implementation Steps
-Week 1 – Setup
-    Deploy Wazuh Cloud or Security Onion.
-    Configure Suricata/Zeek for traffic monitoring.
-    Generate sample alerts (e.g., Nmap scans, brute force).
 
-Week 2 – SOAR Integration
-    Create a Shuffle SOAR account.
-    Connect Wazuh API to Shuffle (Alert ingestion).
-    Test a simple playbook: Alert → Slack notification.
+Downloaded the windows 10 and imported in vbox 
+After importing in vbox , installed splunk UF for forwarding the logs to my host Mint on port of 9997
+created inputs.conf (C:\Program Files\SplunkUniversalForwarder\etc\system\local\inputs.conf)
+```
+[default]
+host = win10-vm
 
-Week 3 – AI + Threat Intel
-    Connect Shuffle to VirusTotal API & AbuseIPDB.
-    Integrate AI summarization via OpenAI API or Ollama.
-    Configure decision nodes:
-        If severity ≥ 8 → Block IP + Notify SOC.
-        If severity < 8 → Only notify SOC.
+[WinEventLog:Security]
+disabled = 0
 
-Week 4 – Full Automation
-    Integrate Firewall API for blocking malicious IPs.
-    Set up Cowrie Honeypot for attacker redirection.
-    Configure TheHive for ticket creation.
-    Build Kibana Dashboard for visualizing alerts and responses.
+[WinEventLog:System]
+disabled = 0
+
+[WinEventLog:Application]
+disabled = 0
+```
+
+and restarted as C:\Program Files\SplunkUniversalForwarded\bin\splunk.exe restart 
+
+cmds like 
+```
+C:\Program Files\SplunkUniversalForwarded\bin\splunk.exe  add forward-server <HOST-IP>:<PORT> -auth Username:Password
+
+```
 
 
-# 📜 Future Improvements
-    Add malware sandbox (Cuckoo) integration.
-    Build self-learning AI model for rule generation.
-    Automate phishing email investigation workflows.
+installed splunk on linux mint using docker 
+cmds like 
+```
+Building :
+docker pull splunk/splunk:latest
+Running :
+docker run -d --name splunk -p 8000:8000 -p 8088:8088 -p 9997:9997 -e SPLUNK_GENERAL_TERMS="--accept-sgt-current-at-splunk-com" -e SPLUNK_START_ARGS="--accept-license" -e SPLUNK_PASSWORD='PASSWORD'   splunk/splunk:latest
+```
+
+Runs on http://localhost:8000
+<img width="1857" height="976" alt="splunk-1" src="https://github.com/user-attachments/assets/80093da8-581d-4c4f-91fa-34798e26baec" />
+
