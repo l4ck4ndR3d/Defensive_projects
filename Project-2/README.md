@@ -137,3 +137,82 @@ ping 192.168.xx.xx  # Should reach host
 - Kali (10.10.xx.xx) <----> Windows (10.10.xx.xx)  -- Attack/Test
 - Windows (192.168.xx.xx) <----> Host (192.168.xx.xx) -- Logs to Splunk
 - No Kali <---//---> Host direct path
+
+
+
+---
+
+
+# Upcoming plans 
+
+2️⃣ Introduce IDS to Catch Attacks
+
+Since you want something like IDS → SOAR, you need an Intrusion Detection System that sends alerts to Splunk.
+
+Common choices:
+    Suricata (good JSON logs, easy Splunk parsing)
+    Snort (classic, but needs more tuning)
+
+💡 You’d install IDS on Windows or Kali depending on design:
+    If on Kali → it detects outbound attacks
+    If on Windows → it detects incoming attacks
+    If on host Mint → it passively sniffs VM traffic
+
+For isolated lab, easiest is:
+    Install Suricata on Windows 10 (to detect Kali attacks).
+    Configure Suricata EVE JSON output → Splunk UF → Splunk.
+
+3️⃣ Prepare Splunk to Parse IDS Logs
+
+Create a props.conf + inputs.conf on UF for Suricata logs:
+
+# inputs.conf
+[monitor://C:\Program Files\Suricata\log\eve.json]
+disabled = false
+sourcetype = suricata:eve
+index = ids
+
+# props.conf (on indexer/Splunk Docker)
+[suricata:eve]
+INDEXED_EXTRACTIONS = json
+KV_MODE = json
+TIMESTAMP_FIELDS = timestamp
+TIME_FORMAT = %Y-%m-%dT%H:%M:%S.%6NZ
+TIME_PREFIX = "timestamp":\s*"
+
+4️⃣ Generate & Capture an Attack
+
+From Kali:
+nmap -sS 10.10.xx.xx
+
+From Windows Suricata logs → Splunk should now see IDS alerts.
+5️⃣ Link Splunk to SOAR (Shuffle)
+
+Once Splunk has both Windows logs + IDS alerts:
+    Create a Webhook or HEC (HTTP Event Collector) in Splunk.
+    In Shuffle, use:
+        Trigger: Splunk Search → Alert → Webhook
+        Apps: Splunk, Email, Slack, Microsoft Teams
+        Actions: Send alert, disable user, isolate endpoint, etc.
+
+Example Shuffle flow:
+
+Suricata Alert → Splunk Alert → Shuffle Trigger → Email SOC Team
+
+6️⃣ Build End-to-End Lab Test
+
+Full cycle:
+    Kali attacks Windows (Internal Network)
+    Windows Suricata detects attack
+    Suricata log → Splunk UF → Splunk
+    Splunk scheduled search matches rule
+    Splunk alert webhook triggers Shuffle
+    Shuffle playbook executes response (email/disable account)
+
+7️⃣ Optional but Recommended
+    Add Sysmon on Windows for deep process/file monitoring
+    Create Splunk dashboards for:
+        Attack timeline
+        IDS alert trends
+        System security logs
+If you want, I can give you the exact Suricata + UF + Splunk config so your lab will start detecting Kali attacks right after setup. That would make your next step plug-and-play.
