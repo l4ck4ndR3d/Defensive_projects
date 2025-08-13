@@ -116,9 +116,23 @@ Internal Adapter (AttackNet):
     IP: 10.10.xx.xx
     Subnet mask: 255.255.255.0
     No default gateway.
+
+On Kali: (Check Connectivity)
+Assign static IP:
+   sudo ip addr add 10.10.xx.xx/24 dev eth0
+   sudo ip link set eth0 up
+```
+```
+Step 3 — Check Connectivity
+
+From Kali:
+ping 10.10.xx.xx   # Should reach Windows internal NIC
+
+From Windows:
+ping 10.10.xx.xx   # Should reach Kali
+ping 192.168.xx.xx  # Should reach host
 ```
 ---
-
 **End Result :**
 - Kali (10.10.xx.xx) <----> Windows (10.10.xx.xx)  -- Attack/Test
 - Windows (192.168.xx.xx) <----> Host (192.168.xx.xx) -- Logs to Splunk
